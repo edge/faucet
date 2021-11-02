@@ -1,0 +1,39 @@
+{
+  "name": "faucet",
+  "version": "0.0.0",
+  "description": "Testnet faucet to provide the community with XE",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE.md",
+  "author": "Edge Network <core@edge.network>",
+  "contributors": [
+    "Adam K Dean <adam@edge.network>"
+  ],
+  "scripts": {
+    "build": "npm run build:src && npm run build:executable",
+    "build:src": "tsc",
+    "build:executable": "pkg . -t host --output bin/faucet",
+    "dev": "ts-node src/main.ts",
+    "dev:from-src": "node out/src/main.js",
+    "dev:watch": "nodemon --watch src -e ts --exec 'npm run dev'",
+    "lint": "eslint --ext .ts src || true",
+    "lint:fix": "eslint --fix --ext .ts src"
+  },
+  "bin": "out/src/main.js",
+  "dependencies": {
+    "@edge/log": "^1.2.0",
+    "@edge/wallet-utils": "^0.14.2",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@edge/eslint-config-typescript": "^0.1.0",
+    "@types/express": "^4.17.13",
+    "@typescript-eslint/eslint-plugin": "^4.31.0",
+    "@typescript-eslint/parser": "^4.31.0",
+    "eslint": "^7.32.0",
+    "nodemon": "^2.0.7",
+    "pkg": "^5.3.1",
+    "typescript": "^4.4.2"
+  }
+}
