@@ -89,32 +89,27 @@ export class API {
   // Routes
   //
   private async getIndex(req: AuthenticatedRequest, res: express.Response): Promise<void> {
-    const requests = await this.storage.getByPrefix('request')
-
-    this.log.info('requests', { requests })
-
     res.json({
       name: 'xe faucet',
-      version: Config.version,
-      requests
+      version: Config.version
     })
   }
 
   private async getMetrics(req: AuthenticatedRequest, res: express.Response): Promise<void> {
-    if (!req.token || req.token !== Config.metricsBearerToken) return this.forbidden(req, res)
+    // if (!req.token || req.token !== Config.metricsBearerToken) return this.forbidden(req, res)
 
-    const requests = await this.storage.getByPrefix('request')
+    const pendingRequests = await this.storage.getCountByPrefix('pending')
+    const totalRequests = await this.storage.getCountByPrefix('request')
 
     const metrics = []
-    if (requests) metrics.push(`requests ${requests.length}`)
+    metrics.push(`pending_requests ${pendingRequests}`)
+    metrics.push(`total_requests ${totalRequests}`)
     res.type('txt').send(metrics.join('\n'))
   }
 
   private async postRequest(req: AuthenticatedRequest, res: express.Response): Promise<void> {
     try {
       const url = req.body && req.body.url
-
-      this.log.debug('body', req.body)
 
       if (!url) return this.badRequest(req, res, { message: 'missing request url' })
       if (!this.isValidTweetUrl(url)) return this.badRequest(req, res, { message: 'invalid request url' })
@@ -146,8 +141,8 @@ export class API {
 
         // store url, last request time, and enqueue address for processing
         await this.storage.set(`url:${url}`, address)
-        await this.storage.set(`request:${url}`, address)
-        await this.storage.set(`lastrequest:${address}`, Date.now().toString())
+        await this.storage.set(`pending:${url}`, address)
+        await this.storage.set(`request:${address}`, Date.now().toString())
 
         res.status(200).json({ success: true, message: 'request queued' })
       })

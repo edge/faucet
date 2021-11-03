@@ -66,6 +66,27 @@ export class Storage {
     }
   }
 
+  public async getCountByPrefix(prefix: string): Promise<number> {
+    try {
+      return await new Promise((resolve, reject) => {
+        const keys: string[] = []
+        this.db.createKeyStream()
+          .on('data', (data) => {
+            const key = data.toString()
+            const keyParts = key.split(':')
+            const keyPrefix = keyParts.length > 1 && keyParts[0]
+            if (keyPrefix && keyPrefix === prefix) keys.push(key)
+          })
+          .on('error', (err) => reject(err))
+          .on('end', async () => resolve(keys.length))
+      })
+    }
+    catch (error) {
+      this.log.error(`Error getting count of keys with prefix ${prefix} from storage`, { error })
+      return 0
+    }
+  }
+
   public async set(key: string, value: string): Promise<void> {
     try {
       const data = typeof value === 'object' ? JSON.stringify(value) : value
