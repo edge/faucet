@@ -2,8 +2,12 @@
 // Use of this source code is governed by a GNU GPL-style license
 // that can be found in the LICENSE.md file. All rights reserved.
 
+/* eslint-disable nonblock-statement-body-position */
+
 import { Config } from '../config'
 import { Log } from'@edge/log'
+import { Storage } from '../storage'
+import Twitter from 'twitter'
 import { checksumAddressIsValid } from '@edge/wallet-utils'
 import cors from 'cors'
 import express from 'express'
@@ -15,11 +19,20 @@ type AuthenticatedRequest = express.Request & {
 export class API {
   private app: express.Express
   private log: Log
-  private requestCount: number
+  private storage: Storage
+  private twitter: Twitter
 
-  constructor(app: express.Express, log: Log) {
+  constructor(app: express.Express, storage: Storage, log: Log) {
     this.app = app
     this.log = log
+    this.storage = storage
+
+    // Initialize twitter
+    this.twitter = new Twitter({
+      consumer_key: Config.twitterApiKey,
+      consumer_secret: Config.twitterSecret,
+      bearer_token: Config.twitterBearerToken
+    })
 
     this.initializeRoutes()
   }
@@ -27,12 +40,14 @@ export class API {
   private initializeRoutes(): void {
     // Middleware
     this.app.use(cors())
-    this.app.use(this.logRequest)
+    this.app.use(express.json())
+    this.app.use(this.logRequest.bind(this))
     this.app.use(this.parseBearerToken)
 
     // Routes
-    this.app.get('/', this.getIndex)
+    this.app.get('/', this.getIndex.bind(this))
     this.app.get('/metrics', this.getMetrics.bind(this))
+    this.app.post('/request', this.postRequest.bind(this))
 
     // Error handlers
     this.app.use(this.notFound)
@@ -55,8 +70,6 @@ export class API {
       userAgent: headers['user-agent']
     })
 
-    this.requestCount++
-
     next()
   }
 
@@ -75,37 +88,79 @@ export class API {
   //
   // Routes
   //
-  private getIndex(req: AuthenticatedRequest, res: express.Response): void {
+  private async getIndex(req: AuthenticatedRequest, res: express.Response): Promise<void> {
+    const requests = await this.storage.getByPrefix('request')
+
+    this.log.info('requests', { requests })
+
     res.json({
       name: 'xe faucet',
-      version: Config.version
+      version: Config.version,
+      requests
     })
   }
 
-  private getMetrics(req: AuthenticatedRequest, res: express.Response): void {
+  private async getMetrics(req: AuthenticatedRequest, res: express.Response): Promise<void> {
     if (!req.token || req.token !== Config.metricsBearerToken) return this.forbidden(req, res)
 
-    const metrics = []
-    metrics.push(`requests ${this.requestCount}`)
-    res.type('txt').send(metrics.join('\n'))
+    const requests = await this.storage.getByPrefix('request')
 
-    this.requestCount = 0
+    const metrics = []
+    if (requests) metrics.push(`requests ${requests.length}`)
+    res.type('txt').send(metrics.join('\n'))
   }
 
-  //
-  // Faucet requests
-  //
-  private postRequest(req: AuthenticatedRequest, res: express.Response): void {
+  private async postRequest(req: AuthenticatedRequest, res: express.Response): Promise<void> {
     try {
-      const address = 'test'
-      if (checksumAddressIsValid(address)) return this.badRequest(req, res, { address })
+      const url = req.body && req.body.url
 
-      this.notImplemented(req, res)
+      this.log.debug('body', req.body)
+
+      if (!url) return this.badRequest(req, res, { message: 'missing request url' })
+      if (!this.isValidTweetUrl(url)) return this.badRequest(req, res, { message: 'invalid request url' })
+
+      // check if the tweet has already been processed
+      const tweet = await this.storage.get(`url:${url}`)
+      if (tweet) return this.badRequest(req, res, { message: 'url already processed' })
+
+      // use twitter api to get twitter by status id
+      const tweetId = url.match(/^https:\/\/twitter\.com\/.*\/status\/(\d+)/)[1]
+      this.twitter.get(`statuses/show/${tweetId}`, {}, async (error, tweet) => {
+        if (error) {
+          this.log.error('Error retrieving tweet', { tweetId, error })
+          return this.internalServerError(req, res)
+        }
+        if (!tweet || !tweet.id_str || !tweet.text) return this.badRequest(req, res, { message: 'invalid tweet' })
+
+        // extract valid xe address from tweet body
+        const matches = tweet.text.match(/\bxe_[0-9a-f]{40}\b/i)
+        const address = matches && matches[0]
+        if (!address || !checksumAddressIsValid(address))
+          return this.badRequest(req, res, { message: 'tweet does not contain valid xe address' })
+
+        // ensure address hasn't requested xe recently
+        const lastRequestKV = await this.storage.get(`lastrequest:${address}`)
+        const lastRequest = lastRequestKV ? parseInt(lastRequestKV.value) : 0
+        if (lastRequest > Date.now() - Config.minRequestInterval)
+          return this.badRequest(req, res, { message: 'request for address received recently' })
+
+        // store url, last request time, and enqueue address for processing
+        await this.storage.set(`url:${url}`, address)
+        await this.storage.set(`request:${url}`, address)
+        await this.storage.set(`lastrequest:${address}`, Date.now().toString())
+
+        res.status(200).json({ success: true, message: 'request queued' })
+      })
     }
-    catch (e) {
-      this.log.error('postRequest error', e)
+    catch (error) {
+      this.log.error('Error handling request', { error })
       return this.serviceUnavailable(req, res)
     }
+  }
+
+  private isValidTweetUrl(url: string): boolean {
+    const match = url && url.match(/^https:\/\/twitter\.com\/.*\/status\/\d+/)
+    return match !== null
   }
 
   //
@@ -147,7 +202,7 @@ export class API {
 
   // Express requires the next parameter to be present to make this the internal server error handler
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private internalServerError(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction): void {
+  private internalServerError(req: AuthenticatedRequest, res: express.Response, next?: express.NextFunction): void {
     res.status(500).json({
       error: 'internal server error',
       path: req.path
@@ -162,5 +217,3 @@ export class API {
     })
   }
 }
-
-module.exports = API
