@@ -6,7 +6,7 @@
 
 import { Config } from '../config'
 import { Log } from'@edge/log'
-import { Storage } from '../storage'
+import { Storage } from './storage'
 import Twitter from 'twitter'
 import { checksumAddressIsValid } from '@edge/wallet-utils'
 import cors from 'cors'
@@ -96,6 +96,7 @@ export class API {
   }
 
   private async getMetrics(req: AuthenticatedRequest, res: express.Response): Promise<void> {
+    // Debug: renable before release
     // if (!req.token || req.token !== Config.metricsBearerToken) return this.forbidden(req, res)
 
     const pendingRequests = await this.storage.getCountByPrefix('pending')

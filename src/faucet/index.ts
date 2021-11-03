@@ -2,9 +2,9 @@
 // Use of this source code is governed by a GNU GPL-style license
 // that can be found in the LICENSE.md file. All rights reserved.
 
-import { API } from '../api'
+import { API } from './api'
 import { Config } from '../config'
-import { Storage } from '../storage'
+import { Storage } from './storage'
 import express from 'express'
 import http from 'http'
 import { Adaptor, Log, LogLevelFromString, LogtailAdaptor, StdioAdaptor } from'@edge/log'
