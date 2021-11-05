@@ -5,8 +5,8 @@
 
 def imagesPushed = ''
 
-def buildAndPushImage(registry, tag) {
-  docker.withRegistry("https://$registry", registry) {
+def buildAndPushImage(registry, registryCredential, tag) {
+  docker.withRegistry("https://$registry", registryCredential) {
     def image = docker.build("$registry/$tag")
     image.push()
     return "$registry/$tag"
@@ -37,7 +37,7 @@ pipeline {
           }
           steps {
             script {
-              def tag = buildAndPushImage(REGISTRY, NAME)
+              def tag = buildAndPushImage(REGISTRY, REGISTRY_CREDENTIAL, NAME)
 
               // Update image list for slack reporting.
               if (imagesPushed == '') imagesPushed = "\n$tag"
