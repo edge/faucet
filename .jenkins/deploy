@@ -27,6 +27,7 @@ def deployScript() {
     --expose $HTTP_PORT \
     --env HTTP_PORT=$HTTP_PORT \
     --env LOG_LEVEL=$LOG_LEVEL \
+    --env LOGTAIL_ENABLED=$LOGTAIL_ENABLED \
     --env LOGTAIL_SOURCE_TOKEN=$LOGTAIL_SOURCE_TOKEN \
     --env METRICS_BEARER_TOKEN=$METRICS_BEARER_TOKEN \
     --env REQUEST_AMOUNT=$REQUEST_AMOUNT \
@@ -85,6 +86,7 @@ pipeline {
                 HTTP_PORT=$HTTP_PORT \
                 DOMAIN=$DOMAIN \
                 LOG_LEVEL=$LOG_LEVEL \
+                LOGTAIL_ENABLED=$LOGTAIL_ENABLED \
                 LOGTAIL_SOURCE_TOKEN=$LOGTAIL_SOURCE_TOKEN \
                 METRICS_BEARER_TOKEN=$METRICS_BEARER_TOKEN \
                 REQUEST_AMOUNT=$REQUEST_AMOUNT \
