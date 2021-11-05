@@ -12,6 +12,8 @@ Dotenv.config()
 const ONE_DAY_MS = 86400000
 
 export class Config {
+  static readonly corsDomain = process.env.CORS_DOMAIN || '*'
+
   static readonly httpPort = process.env.HTTP_PORT ? parseInt(process.env.HTTP_PORT) : 8000
 
   static readonly logLevel = process.env.LOG_LEVEL || 'WARN'
