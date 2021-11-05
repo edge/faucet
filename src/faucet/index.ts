@@ -72,7 +72,7 @@ export class Faucet {
           sender: Config.xeWalletAddress,
           recipient: requests[i].value,
           amount: Config.requestAmount,
-          data: { memo: 'Faucet funds' },
+          data: { memo: 'Automated faucet request' },
           nonce: walletInfo.nonce++
         }, Config.xeWalletPrivateKey))
       }
