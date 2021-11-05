@@ -12,6 +12,8 @@ import { checksumAddressIsValid } from '@edge/wallet-utils'
 import cors from 'cors'
 import express from 'express'
 
+const twitterRegex = /^https:\/\/twitter\.com\/.*\/status\/\d+/
+
 type AuthenticatedRequest = express.Request & {
   token?: string
 }
@@ -119,7 +121,7 @@ export class API {
       if (tweet) return this.badRequest(req, res, { message: 'url already processed' })
 
       // Use Twitter api to get tweet by status id
-      const tweetId = url.match(/^https:\/\/twitter\.com\/.*\/status\/(\d+)/)[1]
+      const tweetId = url.match(twitterRegex)[1]
       this.twitter.get(`statuses/show/${tweetId}`, {}, async (error, tweet) => {
         if (error) {
           this.log.error('Error retrieving tweet', { tweetId, error })
@@ -156,7 +158,7 @@ export class API {
   }
 
   private isValidTweetUrl(url: string): boolean {
-    const match = url && url.match(/^https:\/\/twitter\.com\/.*\/status\/\d+/)
+    const match = url && url.match(twitterRegex)
     return match !== null
   }
 
