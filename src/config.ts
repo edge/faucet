@@ -14,8 +14,6 @@ const ONE_DAY_MS = 86400000
 export class Config {
   static readonly httpPort = process.env.HTTP_PORT ? parseInt(process.env.HTTP_PORT) : 8000
 
-  static readonly indexUrl = process.env.INDEX_API_URL || 'https://index.test.network'
-
   static readonly logLevel = process.env.LOG_LEVEL || 'WARN'
   static readonly logtailEnabled = process.env.LOGTAIL_ENABLED === 'true'
   static readonly logtailSourceToken = process.env.LOGTAIL_SOURCE_TOKEN || ''
