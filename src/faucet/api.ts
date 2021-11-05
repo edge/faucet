@@ -39,7 +39,7 @@ export class API {
 
   private initializeRoutes(): void {
     // Middleware
-    this.app.use(cors())
+    this.app.use(cors({ origin: 'https://test.network' }))
     this.app.use(express.json())
     this.app.use(this.logRequest.bind(this))
     this.app.use(this.parseBearerToken)
