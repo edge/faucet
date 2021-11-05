@@ -1,6 +1,6 @@
 {
   "name": "faucet",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Testnet faucet to provide the community with XE",
   "private": true,
   "license": "SEE LICENSE IN LICENSE.md",
