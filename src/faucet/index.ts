@@ -21,7 +21,7 @@ export class Faucet {
 
   constructor() {
     // Initialize log
-    const adaptors: [Adaptor] = [new StdioAdaptor()]
+    const adaptors: Adaptor[] = [new StdioAdaptor()]
     if (Config.logtailEnabled) adaptors.push(new LogtailAdaptor(Config.logtailSourceToken))
     this.log = new Log(adaptors, 'faucet', LogLevelFromString(Config.logLevel))
 
