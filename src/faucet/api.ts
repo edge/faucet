@@ -118,7 +118,7 @@ export class API {
       const tweet = await this.storage.get(`url:${url}`)
       if (tweet) return this.badRequest(req, res, { message: 'url already processed' })
 
-      // Use twitter api to get Twitter by status id
+      // Use Twitter api to get tweet by status id
       const tweetId = url.match(/^https:\/\/twitter\.com\/.*\/status\/(\d+)/)[1]
       this.twitter.get(`statuses/show/${tweetId}`, {}, async (error, tweet) => {
         if (error) {
