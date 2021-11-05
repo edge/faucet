@@ -40,6 +40,7 @@ def deployScript() {
     --env VIRTUAL_HOST=$DOMAIN \
     --env LETSENCRYPT_HOST=$DOMAIN \
     --env LETSENCRYPT_EMAIL="adam@edge.network" \
+    --volume faucet-data:$STORAGE_DIRECTORY \
     $IMAGE
   ''')
 }
@@ -94,7 +95,6 @@ pipeline {
                 TWITTER_BEARER_TOKEN=$TWITTER_BEARER_TOKEN \
                 XE_WALLET_ADDRESS=$XE_WALLET_ADDRESS \
                 XE_WALLET_PRIVATE_KEY=$XE_WALLET_PRIVATE_KEY \
-                --volume faucet-data:$STORAGE_DIRECTORY \
                   bash -x ./${filename} && \
                 rm ${filename}'"
             }
