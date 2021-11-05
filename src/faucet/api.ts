@@ -136,7 +136,7 @@ export class API {
           return this.badRequest(req, res, { message: 'tweet does not contain valid xe address' })
 
         // Ensure address hasn't requested XE recently
-        const lastRequestKV = await this.storage.get(`lastrequest:${address}`)
+        const lastRequestKV = await this.storage.get(`request:${address}`)
         const lastRequest = lastRequestKV ? parseInt(lastRequestKV.value) : 0
         if (lastRequest > Date.now() - Config.requestCooldownMs)
           return this.badRequest(req, res, { message: 'request for address received recently' })
