@@ -12,7 +12,7 @@ import { checksumAddressIsValid } from '@edge/wallet-utils'
 import cors from 'cors'
 import express from 'express'
 
-const twitterRegex = /^https:\/\/twitter\.com\/.*\/status\/\d+/
+const twitterRegex = /^https:\/\/twitter\.com\/.*\/status\/(\d+)/
 
 type AuthenticatedRequest = express.Request & {
   token?: string
