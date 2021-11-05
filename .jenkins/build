@@ -1,0 +1,78 @@
+#!/usr/bin/env groovy
+// Copyright (C) 2021 Edge Network Technologies Limited
+// Use of this source code is governed by a GNU GPL-style license
+// that can be found in the LICENSE.md file. All rights reserved.
+
+def imagesPushed = ''
+
+def buildAndPushImage(registry, tag) {
+  docker.withRegistry("https://$registry", registry) {
+    def image = docker.build("$registry/$tag")
+    image.push()
+    return "$registry/$tag"
+  }
+}
+
+pipeline {
+  agent any
+  stages {
+    //
+    // Notify the team
+    //
+    stage('Notify') {
+      steps {
+        discordSend title: JOB_NAME, description: "${env.JOB_NAME} (#${env.BUILD_NUMBER}) has started", result: "SUCCESS", webhookURL: DISCORD_BUILD_WEBHOOK
+      }
+    }
+
+    //
+    // Build image
+    //
+    stage('Build') {
+      failFast true
+      parallel {
+        stage('amd64') {
+          agent {
+            label 'arch-amd64'
+          }
+          steps {
+            script {
+              def tag = buildAndPushImage(REGISTRY, NAME)
+
+              // Update image list for slack reporting.
+              if (imagesPushed == '') imagesPushed = "\n$tag"
+              else imagesPushed = "$imagesPushed\n$tag"
+            }
+          }
+        }
+      }
+    }
+  }
+  post {
+    success {
+      script {
+        if (imagesPushed != '') {
+          discordSend title: JOB_NAME, description: "${env.JOB_NAME} (#${env.BUILD_NUMBER}) has completed successfully, pushing images $imagesPushed", result: "SUCCESS", webhookURL: DISCORD_BUILD_WEBHOOK
+        }
+      }
+    }
+    failure {
+      script {
+        if (imagesPushed != '') {
+          discordSend title: JOB_NAME, description: "${env.JOB_NAME} (#${env.BUILD_NUMBER}) has failed, but pushed images $imagesPushed", result: "FAILURE", webhookURL: DISCORD_BUILD_WEBHOOK
+        } else {
+          discordSend title: JOB_NAME, description: "${env.JOB_NAME} (#${env.BUILD_NUMBER}) has failed", result: "FAILURE", webhookURL: DISCORD_BUILD_WEBHOOK
+        }
+      }
+    }
+    aborted {
+      script {
+        if (imagesPushed != '') {
+          discordSend title: JOB_NAME, description: "${env.JOB_NAME} (#${env.BUILD_NUMBER}) was aborted, but pushed images $imagesPushed", result: "WARNING", webhookURL: DISCORD_BUILD_WEBHOOK
+        } else {
+          discordSend title: JOB_NAME, description: "${env.JOB_NAME} (#${env.BUILD_NUMBER}) was aborted", result: "ABORTED", webhookURL: DISCORD_BUILD_WEBHOOK
+        }
+      }
+    }
+  }
+}
