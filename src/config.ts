@@ -22,7 +22,7 @@ export class Config {
 
   static readonly metricsBearerToken = process.env.METRICS_BEARER_TOKEN || ''
 
-  static readonly requestAmount = process.env.REQUEST_AMOUNT ? parseInt(process.env.REQUEST_AMOUNT) : 2500
+  static readonly requestAmount = process.env.REQUEST_AMOUNT ? parseInt(process.env.REQUEST_AMOUNT) : 2500 * 1e6
   static readonly requestCooldownMs = process.env.REQUEST_COOLDOWN_MS ? parseInt(process.env.REQUEST_COOLDOWN_MS) : ONE_DAY_MS
   static readonly requestProcessingInterval = process.env.REQUEST_PROCESSING_INTERVAL || '* * * * *'
 
