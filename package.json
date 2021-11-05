@@ -9,11 +9,9 @@
     "Adam K Dean <adam@edge.network>"
   ],
   "scripts": {
-    "build": "npm run build:src && npm run build:executable",
-    "build:src": "tsc",
-    "build:executable": "pkg . -t host --output bin/faucet",
+    "start": "node out/src/main.js",
+    "build": "tsc",
     "dev": "ts-node src/main.ts",
-    "dev:from-src": "node out/src/main.js",
     "dev:watch": "nodemon --watch src -e ts --exec 'npm run dev'",
     "lint": "eslint --ext .ts src || true",
     "lint:fix": "eslint --fix --ext .ts src"
@@ -30,7 +28,8 @@
     "express": "^4.17.1",
     "leveldown": "^6.1.0",
     "levelup": "^5.1.1",
-    "mkdirp": "^1.0.4"
+    "mkdirp": "^1.0.4",
+    "twitter": "^1.7.1"
   },
   "devDependencies": {
     "@edge/eslint-config-typescript": "^0.1.0",
@@ -45,7 +44,6 @@
     "@typescript-eslint/parser": "^4.31.0",
     "eslint": "^7.32.0",
     "nodemon": "^2.0.7",
-    "pkg": "^5.3.1",
     "ts-node": "^10.4.0",
     "typescript": "^4.4.2"
   }
