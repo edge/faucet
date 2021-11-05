@@ -9,7 +9,7 @@ import { version } from '../package.json'
 
 Dotenv.config()
 
-const ONE_DAY = 86400000
+const ONE_DAY_MS = 86400000
 
 export class Config {
   static readonly httpPort = process.env.HTTP_PORT ? parseInt(process.env.HTTP_PORT) : 8000
@@ -22,7 +22,9 @@ export class Config {
 
   static readonly metricsBearerToken = process.env.METRICS_BEARER_TOKEN || ''
 
-  static readonly minRequestInterval = process.env.MIN_REQUEST_INTERVAL ? parseInt(process.env.MIN_REQUEST_INTERVAL) : ONE_DAY
+  static readonly requestAmount = process.env.REQUEST_AMOUNT ? parseInt(process.env.REQUEST_AMOUNT) : 2500
+  static readonly requestCooldownMs = process.env.REQUEST_COOLDOWN_MS ? parseInt(process.env.REQUEST_COOLDOWN_MS) : ONE_DAY_MS
+  static readonly requestProcessingInterval = process.env.REQUEST_PROCESSING_INTERVAL || '* * * * *'
 
   static readonly storageDirectory = process.env.STORAGE_DIRECTORY || '.storage'
 

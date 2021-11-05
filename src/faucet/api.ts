@@ -96,8 +96,7 @@ export class API {
   }
 
   private async getMetrics(req: AuthenticatedRequest, res: express.Response): Promise<void> {
-    // Debug: renable before release
-    // if (!req.token || req.token !== Config.metricsBearerToken) return this.forbidden(req, res)
+    if (!req.token || req.token !== Config.metricsBearerToken) return this.forbidden(req, res)
 
     const pendingRequests = await this.storage.getCountByPrefix('pending')
     const totalRequests = await this.storage.getCountByPrefix('request')
@@ -115,34 +114,36 @@ export class API {
       if (!url) return this.badRequest(req, res, { message: 'missing request url' })
       if (!this.isValidTweetUrl(url)) return this.badRequest(req, res, { message: 'invalid request url' })
 
-      // check if the tweet has already been processed
+      // Check if the tweet has already been processed
       const tweet = await this.storage.get(`url:${url}`)
       if (tweet) return this.badRequest(req, res, { message: 'url already processed' })
 
-      // use twitter api to get twitter by status id
+      // Use twitter api to get Twitter by status id
       const tweetId = url.match(/^https:\/\/twitter\.com\/.*\/status\/(\d+)/)[1]
       this.twitter.get(`statuses/show/${tweetId}`, {}, async (error, tweet) => {
         if (error) {
           this.log.error('Error retrieving tweet', { tweetId, error })
           return this.internalServerError(req, res)
         }
-        if (!tweet || !tweet.id_str || !tweet.text) return this.badRequest(req, res, { message: 'invalid tweet' })
 
-        // extract valid xe address from tweet body
+        if (!tweet || !tweet.id_str || !tweet.text)
+          return this.badRequest(req, res, { message: 'invalid tweet' })
+
+        // Extract valid XE address from tweet body
         const matches = tweet.text.match(/\bxe_[0-9a-f]{40}\b/i)
         const address = matches && matches[0]
         if (!address || !checksumAddressIsValid(address))
           return this.badRequest(req, res, { message: 'tweet does not contain valid xe address' })
 
-        // ensure address hasn't requested xe recently
+        // Ensure address hasn't requested XE recently
         const lastRequestKV = await this.storage.get(`lastrequest:${address}`)
         const lastRequest = lastRequestKV ? parseInt(lastRequestKV.value) : 0
-        if (lastRequest > Date.now() - Config.minRequestInterval)
+        if (lastRequest > Date.now() - Config.requestCooldownMs)
           return this.badRequest(req, res, { message: 'request for address received recently' })
 
-        // store url, last request time, and enqueue address for processing
+        // Store url, last request time, and enqueue address for processing
         await this.storage.set(`url:${url}`, address)
-        await this.storage.set(`pending:${url}`, address)
+        await this.storage.set(`pending:${address}`, address)
         await this.storage.set(`request:${address}`, Date.now().toString())
 
         res.status(200).json({ success: true, message: 'request queued' })
@@ -202,14 +203,6 @@ export class API {
     res.status(500).json({
       error: 'internal server error',
       path: req.path
-    })
-  }
-
-  private notImplemented(req: AuthenticatedRequest, res: express.Response, msg?: Record<string, unknown>): void {
-    res.status(501).json({
-      error: 'not implemented',
-      path: req.path,
-      ...msg
     })
   }
 }
