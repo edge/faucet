@@ -23,6 +23,7 @@
     "@edge/index-utils": "^0.1.0",
     "@edge/log": "^1.2.1",
     "@edge/wallet-utils": "^0.14.2",
+    "@edge/xe-utils": "^0.3.1",
     "cors": "^2.8.5",
     "cron": "^1.8.2",
     "dotenv": "^10.0.0",
