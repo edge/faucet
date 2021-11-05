@@ -96,4 +96,13 @@ export class Storage {
       this.log.error(`Error setting ${key} in storage`, { error })
     }
   }
+
+  public async delete(key: string): Promise<void> {
+    try {
+      await this.db.del(key)
+    }
+    catch (error) {
+      this.log.error(`Error deleting ${key} from storage`, { error })
+    }
+  }
 }
