@@ -1,6 +1,6 @@
 {
   "name": "faucet",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Testnet faucet to provide the community with XE",
   "private": true,
   "license": "SEE LICENSE IN LICENSE.md",
@@ -20,7 +20,7 @@
   "dependencies": {
     "@edge/index-utils": "^0.1.0",
     "@edge/log": "^1.2.1",
-    "@edge/wallet-utils": "^0.14.2",
+    "@edge/wallet-utils": "^0.16.1",
     "@edge/xe-utils": "^0.3.1",
     "cors": "^2.8.5",
     "cron": "^1.8.2",
