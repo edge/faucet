@@ -48,17 +48,10 @@ def deployScript() {
 }
 
 pipeline {
-  agent any
+  agent {
+    label 'local'
+  }
   stages {
-    //
-    // Notify the team
-    //
-    stage('Notify') {
-      steps {
-        discordSend title: JOB_NAME, description: "${env.JOB_NAME} (#${env.BUILD_NUMBER}) has started", result: "SUCCESS", webhookURL: DISCORD_DEPLOY_WEBHOOK
-      }
-    }
-
     //
     // Deploy
     //
