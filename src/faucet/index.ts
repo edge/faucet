@@ -9,7 +9,7 @@ import { CronJob } from 'cron'
 import { Storage } from './storage'
 import express from 'express'
 import http from 'http'
-import { Adaptor, Log, LogLevelFromString, LogtailAdaptor, StdioAdaptor } from'@edge/log'
+import { Adaptor, Log, LogLevelFromString, NewRelicAdaptor, StdioAdaptor } from'@edge/log'
 
 export class Faucet {
   private app: express.Express
@@ -22,7 +22,12 @@ export class Faucet {
   constructor() {
     // Initialize log
     const adaptors: Adaptor[] = [new StdioAdaptor()]
-    if (Config.logtailEnabled) adaptors.push(new LogtailAdaptor(Config.logtailSourceToken))
+    if (Config.newrelicApiKey) {
+      adaptors.push(new NewRelicAdaptor(
+        { apiKey: Config.newrelicApiKey, url: Config.newrelicUrl },
+        { network: 'testnet', serviceType: 'faucet' }
+      ))
+    }
     this.log = new Log(adaptors, 'faucet', LogLevelFromString(Config.logLevel))
 
     // Initialize storage
