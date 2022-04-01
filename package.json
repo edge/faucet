@@ -19,7 +19,7 @@
   "bin": "out/src/main.js",
   "dependencies": {
     "@edge/index-utils": "^0.1.0",
-    "@edge/log": "^1.2.1",
+    "@edge/log": "^1.5.0",
     "@edge/wallet-utils": "^0.16.1",
     "@edge/xe-utils": "^0.3.1",
     "cors": "^2.8.5",

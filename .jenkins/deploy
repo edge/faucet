@@ -31,6 +31,8 @@ def deployScript() {
     --env LOGTAIL_ENABLED=$LOGTAIL_ENABLED \
     --env LOGTAIL_SOURCE_TOKEN=$LOGTAIL_SOURCE_TOKEN \
     --env METRICS_BEARER_TOKEN=$METRICS_BEARER_TOKEN \
+    --env NEWRELIC_API_KEY=$NEWRELIC_API_KEY \
+    --env NEWRELIC_URL=$NEWRELIC_URL \
     --env REQUEST_AMOUNT=$REQUEST_AMOUNT \
     --env REQUEST_COOLDOWN_MS=$REQUEST_COOLDOWN_MS \
     --env STORAGE_DIRECTORY=$STORAGE_DIRECTORY \
@@ -68,7 +70,8 @@ pipeline {
             withCredentials([
               string(credentialsId: TWITTER_SECRET, variable: 'TWITTER_SECRET'),
               string(credentialsId: TWITTER_BEARER_TOKEN, variable: 'TWITTER_BEARER_TOKEN'),
-              string(credentialsId: XE_WALLET_PRIVATE_KEY, variable: 'XE_WALLET_PRIVATE_KEY')
+              string(credentialsId: XE_WALLET_PRIVATE_KEY, variable: 'XE_WALLET_PRIVATE_KEY'),
+              string(credentialsId: NEWRELIC_API_KEY, variable: 'NEWRELIC_API_KEY_VALUE')
             ]) {
               println "> deploying ${IMAGE} ($NAME) to ${DEPLOY_TARGET}..."
 
@@ -84,6 +87,8 @@ pipeline {
                 LOGTAIL_ENABLED=$LOGTAIL_ENABLED \
                 LOGTAIL_SOURCE_TOKEN=$LOGTAIL_SOURCE_TOKEN \
                 METRICS_BEARER_TOKEN=$METRICS_BEARER_TOKEN \
+                NEWRELIC_API_KEY=$NEWRELIC_API_KEY_VALUE \
+                NEWRELIC_URL=$NEWRELIC_URL \
                 REQUEST_AMOUNT=$REQUEST_AMOUNT \
                 REQUEST_COOLDOWN_MS=$REQUEST_COOLDOWN_MS \
                 STORAGE_DIRECTORY=$STORAGE_DIRECTORY \
