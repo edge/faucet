@@ -13,8 +13,6 @@ import cors from 'cors'
 import express from 'express'
 
 const twitterRegex = /^https:\/\/twitter\.com\/.*\/status\/(\d+)/
-const corsOrigin = Config.corsDomain.split(',')
-console.info(`CORS domains ${corsOrigin}`)
 
 type AuthenticatedRequest = express.Request & {
   token?: string
@@ -43,7 +41,7 @@ export class API {
 
   private initializeRoutes(): void {
     // Middleware
-    this.app.use(cors({ origin: ['https://wallet.test.network', 'https://test.network'] }))
+    this.app.use(cors({ origin: Config.corsDomain.split(',') }))
     this.app.use(express.json())
     this.app.use(this.logRequest.bind(this))
     this.app.use(this.parseBearerToken)
