@@ -41,7 +41,7 @@ export class API {
 
   private initializeRoutes(): void {
     // Middleware
-    this.app.use(cors({ origin: Config.corsDomain }))
+    this.app.use(cors({ origin: Config.corsDomain.split(',') }))
     this.app.use(express.json())
     this.app.use(this.logRequest.bind(this))
     this.app.use(this.parseBearerToken)
