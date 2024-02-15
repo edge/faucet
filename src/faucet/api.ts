@@ -4,11 +4,11 @@
 
 /* eslint-disable nonblock-statement-body-position */
 
+import * as xe from '@edge/xe-utils'
 import { Config } from '../config'
 import { Log } from'@edge/log'
 import { Storage } from './storage'
 import Twitter from 'twitter'
-import { checksumAddressIsValid } from '@edge/wallet-utils'
 import cors from 'cors'
 import express from 'express'
 
@@ -134,7 +134,7 @@ export class API {
         // Extract valid XE address from tweet body
         const matches = tweet.text.match(/\bxe_[0-9a-f]{40}\b/i)
         const address = matches && matches[0]
-        if (!address || !checksumAddressIsValid(address))
+        if (!address || !xe.wallet.validateAddress(address))
           return this.badRequest(req, res, { message: 'tweet does not contain valid xe address' })
 
         // Ensure address hasn't requested XE recently
